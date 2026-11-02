@@ -21,9 +21,12 @@ and metadata rather than the upstream data.
 ```sh
 ./scripts/prepare-amiga-port.sh \
   "/path/to/Aishi & Reimu (SAGE '25 Demo)" \
-  /path/to/amigaopensurge/dist/opensurge \
   ./dist/AishiReimu
 ```
+
+Install the QPAK-enabled shared engine at `DH1:OpenSurgeRC1`, then run the
+prepared port with `Execute DH1:AishiReimu/StartGame`. The content keeps its
+own 0.6.1.2 `surge.cfg`; the engine is not copied or forked.
 
 See [PORT_STATUS.md](PORT_STATUS.md) for validation results.
 
