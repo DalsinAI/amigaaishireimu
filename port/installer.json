@@ -1,0 +1,53 @@
+{
+  "name": "Aishi & Reimu (SAGE '25 Demo)",
+  "version": "standalone-rc1",
+  "drawer": "AishiReimu",
+  "program": "StartGame",
+  "cpu": "68040",
+  "fpu": true,
+  "space": 560000000,
+  "modules": [
+    "GL.module",
+    "SDL2.module"
+  ],
+  "keep": [
+    "Game",
+    "game.zip"
+  ],
+  "parent": "Work:Games",
+  "badge": "icons/art/badge.png",
+  "data": {
+    "root": "Aishi & Reimu (SAGE '25 Demo)",
+    "archive": "Aishi & Reimu (SAGE '25 Demo).zip",
+    "archive_size": 163830376,
+    "sha256": "3f80a6fea4cb790fd0e0d5090565e8f111f3eb42c6c9d9ccd5ab29432277fd51",
+    "page": "https://sonicfangameshq.com/forums/showcase/aishi-reimu-sage-25-demo.2638/",
+    "unzip": true,
+    "patch_menu": false,
+    "surge_cfg": false,
+    "exclude": [
+      "#?.exe",
+      "#?.dll",
+      "src",
+      "screenshots",
+      "logfile.txt",
+      "allegro.log",
+      "surge.prefs",
+      "CMakeLists.txt"
+    ],
+    "checks": [
+      [
+        "scripts/ui/menubuttonlist.ss",
+        7688
+      ],
+      [
+        "surge.cfg",
+        1336
+      ],
+      [
+        "levels/cosmic-1.lev",
+        45303
+      ]
+    ]
+  }
+}

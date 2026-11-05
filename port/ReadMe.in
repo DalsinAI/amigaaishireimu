@@ -1,0 +1,90 @@
+Aishi & Reimu (SAGE '25 Demo) for AmigaOS 3 - @RELEASE_VERSION@
+============================================================
+
+The Amiga OpenSurge engine, ready to play Aishi & Reimu (SAGE '25 Demo),
+a fan game made with the Open Surge Engine. No separate engine install is
+needed.
+
+THIS ARCHIVE HAS NONE OF THE GAME'S OWN FILES. Its makers have not said
+they may be passed on, so they are not. Download the game yourself, from
+its page:
+
+  https://sonicfangameshq.com/forums/showcase/aishi-reimu-sage-25-demo.2638/
+
+  file     Aishi & Reimu (SAGE '25 Demo).zip
+  size     163830376 bytes
+  sha256   3f80a6fea4cb790fd0e0d5090565e8f111f3eb42c6c9d9ccd5ab29432277fd51
+
+The game, its characters and its music belong to their makers and owners;
+it is not made by or for SEGA, or by Team Shanghai Alice.
+
+Installing
+----------
+Double-click Install-AishiReimu beside the AishiReimu drawer. It checks the
+CPU,
+FPU and GFOpenGPU, asks where the AishiReimu drawer should go (Work:Games is
+offered), copies the engine there, and then asks for the game you
+downloaded:
+
+- the archive itself: the Installer checks its size and unpacks it with
+  SYS:Utilities/GFOpenCompress (part of AmiCradle) into the drawer;
+- or the folder "Aishi & Reimu (SAGE '25 Demo)" that unpacking it made;
+- or a game.zip made from the download on another computer with the port's
+  scripts/prepare-amiga-port.sh.
+
+It checks the folder's name and the sizes of a few of its files, then
+copies the game's files into AishiReimu/Game, leaving out the Windows
+program
+files. Running Install-AishiReimu again replaces or keeps those files.
+
+A computer with a shell can check the download's SHA-256 first:
+  sha256sum "Aishi & Reimu (SAGE '25 Demo).zip"
+
+What is in the drawer
+---------------------
+StartGame   starts the game (once its files are installed)
+Engine/     the OpenSurge engine (below)
+Game/       the game's own files, from your download (Install-AishiReimu)
+Tools/      what Install-AishiReimu uses
+Licences/   licences and the engine's source
+
+What it needs
+-------------
+- AmigaOS 3.2 (Installer 43.3 or newer for Install-AishiReimu)
+- a 68040 or 68060 with an FPU
+- GFOpenGPU: LIBS:GFOpenGPU/GL.module and SDL2.module (as on AmiCradle)
+- about 560 MB free on the hard disk, and plenty of Fast RAM
+
+The engine
+----------
+Engine/ is Amiga OpenSurge, Open Surge Engine 0.6.1.3 for AmigaOS 3,
+exactly as released:
+
+  release   @ENGINE_REPO@ @ENGINE_TAG@
+  commit    @ENGINE_COMMIT@
+  archive   @ENGINE_ASSET@
+  sha256    @ENGINE_SHA256@
+  program   Engine/opensurge
+  sha256    @ENGINE_BINARY_SHA256@
+  compiler  @ENGINE_COMPILER@
+
+No separate engine install is needed: StartGame runs this copy. The engine
+keeps its settings, logfile.txt and the game's compatibility pack in
+Engine/ (Engine/.userdata). Licences/SOURCE.txt says where its source is.
+
+Starting and playing
+--------------------
+Double-click StartGame in the AishiReimu drawer. From a Shell, CD to the
+drawer first, then Execute StartGame. F10 switches between a window and
+the full screen. Leave the game from its own menu (Esc brings it up in
+most games).
+
+Licences
+--------
+Licences/GPL-3.0.txt   the engine (GNU GPL 3 or later)
+Licences/SOURCE.txt    where the engine's source is, at the exact commit
+Licences/Port-scripts-MIT.txt  StartGame, the Installer script, Tools/
+Engine/licenses/       the engine's own art, sound and font licences
+
+The port's repository: https://github.com/DalsinAI/amigaaishireimu
+(port commit @PORT_COMMIT@)
