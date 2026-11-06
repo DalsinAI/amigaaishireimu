@@ -1,10 +1,10 @@
-; $VER: Install-AishiReimu standalone-rc1 (5.11.2026)
+; $VER: Install-AishiReimu standalone-rc2 (6.11.2026)
 ; The Amiga Installer script for Aishi & Reimu (SAGE '25 Demo), an AmiCradle game port.
 ; Made by amicradle scripts/port_installer.py: change the spec, not this file.
 ; Run it from its icon, beside the AishiReimu drawer where the archive was unpacked.
 
 (set @app-name "Aishi & Reimu (SAGE '25 Demo)")
-(set #version "standalone-rc1")
+(set #version "standalone-rc2")
 (set #drawer "AishiReimu")
 (set #program "StartGame")
 (set #space 546875)  ; KB
@@ -30,7 +30,7 @@
 (if (<> (exists (tackon #from #program) (noreq)) 1)
     (abort "The AishiReimu drawer has no StartGame in it. Unpack the whole archive again."))
 
-(welcome "This installs Aishi & Reimu (SAGE '25 Demo) standalone-rc1 for AmigaOS 3.2 on a 68040, 68060 or 68080 with an FPU.")
+(welcome "This installs Aishi & Reimu (SAGE '25 Demo) standalone-rc2 for AmigaOS 3.2 on a 68040, 68060 or 68080 with an FPU.")
 
 ; where: the parent drawer
 (set #default
@@ -112,11 +112,15 @@
 (set #game (tackon #dest "Game"))
 (set #gamezip (tackon #dest "game.zip"))
 (set #have (or (= (exists (tackon #game "languages") (noreq)) 2) (= (exists #gamezip (noreq)) 1)))
-(message "Aishi & Reimu (SAGE '25 Demo)'s own files are not part of this archive and are not given out with it. Download the game yourself from its page:\n\nhttps://sonicfangameshq.com/forums/showcase/aishi-reimu-sage-25-demo.2638/\n\nThe file there is called Aishi & Reimu (SAGE '25 Demo).zip (163830376 bytes; SHA-256 3f80a6fea4cb790fd0e0d5090565e8f111f3eb42c6c9d9ccd5ab29432277fd51).")
+(set #sha256 "3f80a6fea4cb790fd0e0d5090565e8f111f3eb42c6c9d9ccd5ab29432277fd51")
+; Tools/SHA256 (port/sha256 in the port's repository) checks the download's SHA-256
+(set #checker (tackon #from "Tools/SHA256"))
+(set #can-check (= (exists #checker (noreq)) 1))
+(message (cat "Aishi & Reimu (SAGE '25 Demo)'s own files are not part of this archive and are not given out with it. Download the game yourself from its page:\n\nhttps://sonicfangameshq.com/forums/showcase/aishi-reimu-sage-25-demo.2638/\n\nThe file there is " "called Aishi & Reimu (SAGE '25 Demo).zip (163830376 bytes; SHA-256 3f80a6fea4cb790fd0e0d5090565e8f111f3eb42c6c9d9ccd5ab29432277fd51).\n\nThe Installer checks its size, and can check its SHA-256 too."))
 (set #how
     (askchoice
         (prompt "Where are Aishi & Reimu (SAGE '25 Demo)'s own files, from Aishi & Reimu (SAGE '25 Demo).zip?")
-        (help "The Installer copies the game's files into the Game drawer inside AishiReimu, beside the OpenSurge engine that comes with this archive. The archive is unpacked with SYS:Utilities/GFOpenCompress. Without it, unpack the archive with any unzip tool and choose the folder instead. prepare-amiga-port.sh (in the port's repository) makes a game.zip on another computer from the same download. Keep: leaves what an earlier run installed.")
+        (help (cat "The Installer copies the game's files into the Game drawer inside AishiReimu, beside the OpenSurge engine that comes with this archive. The archive is unpacked with SYS:Utilities/GFOpenCompress. Without it, unpack the archive with any " "unzip tool and choose the folder instead. prepare-amiga-port.sh (in the port's repository) makes a game.zip on another computer from the same download. Keep: leaves what an earlier run installed."))
         (choices "The archive I downloaded (Aishi & Reimu (SAGE '25 Demo).zip)" "The folder I unpacked it into (called Aishi & Reimu (SAGE '25 Demo))" "A game.zip made by prepare-amiga-port.sh" "Keep the game files already installed")
         (default (if #have 3 0))))
 (if (and (= #how 3) (not #have))
@@ -133,6 +137,22 @@
             (abort (cat "There is no file " #arc ".")))
         (if (<> (getsize #arc) #archive-size)
             (abort (cat #arc " is " (getsize #arc) " bytes, not the 163830376 of Aishi & Reimu (SAGE '25 Demo).zip. Download it again from https://sonicfangameshq.com/forums/showcase/aishi-reimu-sage-25-demo.2638/")))
+        (if #can-check
+            (if
+                (askbool
+                    (prompt "Check the SHA-256 of Aishi & Reimu (SAGE '25 Demo).zip before it is unpacked?")
+                    (help (cat "Its size is right. Tools/SHA256 (in this archive) reads the whole file and compares its SHA-256 with 3f80a6fea4cb790fd0e0d5090565e8f111f3eb42c6c9d9ccd5ab29432277fd51, the one of the download this port was made for. That finds a damaged " "download or another version of the game. On a 68040 it takes a few minutes. Skip it if you checked the file on another computer."))
+                    (choices "Check it" "Skip the check")
+                    (default 1))
+                (
+                    (working "Checking the SHA-256 of Aishi & Reimu (SAGE '25 Demo).zip. On a 68040 this takes a few minutes.")
+                    (set #sha-rc (run (cat "\"" #checker "\" \"" #arc "\" EXPECT=" #sha256 " >NIL:") (safe)))
+                    (if (<> #sha-rc 0)
+                        (abort (cat #arc " is not the Aishi & Reimu (SAGE '25 Demo).zip this port was made for: its SHA-256 is not " #sha256 ". It was damaged in the download or is another version. Download it again from https://sonicfangameshq.com/forums/showcase/aishi-reimu-sage-25-demo.2638/")))
+                    (message (cat "The SHA-256 of " #arc " matches:" "\n\n" #sha256))
+                )
+            )
+        )
         (if (<> (exists "SYS:Utilities/GFOpenCompress" (noreq)) 1)
             (abort "SYS:Utilities/GFOpenCompress, which unpacks the archive, is not on this Amiga. Unpack Aishi & Reimu (SAGE '25 Demo).zip with an unzip tool, then run Install-AishiReimu again and choose the Aishi & Reimu (SAGE '25 Demo) folder."))
         (set #unpack (tackon #dest "Unpack"))
@@ -155,6 +175,31 @@
             (set #src (tackon #src #root)))
         (if (<> (fileonly #src) #root)
             (abort (cat #src " is not the Aishi & Reimu (SAGE '25 Demo) folder. Choose the folder that unpacking Aishi & Reimu (SAGE '25 Demo).zip made.")))
+        (if #can-check
+            (if
+                (askbool
+                    (prompt "The folder's files are checked by their sizes, which finds a folder that is incomplete or from another version. Do you still have Aishi & Reimu (SAGE '25 Demo).zip? If you do, the Installer can check its SHA-256 as well.")
+                    (help (cat "Tools/SHA256 (in this archive) reads Aishi & Reimu (SAGE '25 Demo).zip and compares its SHA-256 with 3f80a6fea4cb790fd0e0d5090565e8f111f3eb42c6c9d9ccd5ab29432277fd51, the one of the download this port was made for. If you no longer have " "the archive, choose Sizes only: the folder is then checked by the sizes of a few of its files, not by a SHA-256."))
+                    (choices "Check the archive" "Sizes only")
+                    (default 1))
+                (
+                    (set #arc
+                        (askfile
+                            (prompt "Choose Aishi & Reimu (SAGE '25 Demo).zip, as you downloaded it.")
+                            (help @askfile-help)
+                            (default "RAM:")))
+                    (if (<> (exists #arc (noreq)) 1)
+                        (abort (cat "There is no file " #arc ".")))
+                    (if (<> (getsize #arc) #archive-size)
+                        (abort (cat #arc " is " (getsize #arc) " bytes, not the 163830376 of Aishi & Reimu (SAGE '25 Demo).zip. Download it again from https://sonicfangameshq.com/forums/showcase/aishi-reimu-sage-25-demo.2638/")))
+                    (working "Checking the SHA-256 of Aishi & Reimu (SAGE '25 Demo).zip. On a 68040 this takes a few minutes.")
+                    (set #sha-rc (run (cat "\"" #checker "\" \"" #arc "\" EXPECT=" #sha256 " >NIL:") (safe)))
+                    (if (<> #sha-rc 0)
+                        (abort (cat #arc " is not the Aishi & Reimu (SAGE '25 Demo).zip this port was made for: its SHA-256 is not " #sha256 ". It was damaged in the download or is another version. Download it again from https://sonicfangameshq.com/forums/showcase/aishi-reimu-sage-25-demo.2638/")))
+                    (message (cat "The SHA-256 of " #arc " matches:" "\n\n" #sha256))
+                )
+            )
+        )
     )
 )
 (if (<> #src "")
@@ -210,7 +255,7 @@
 (complete 100)
 (if @pretend
     (message (cat "Pretend: nothing was copied or changed. Aishi & Reimu (SAGE '25 Demo) would have gone in " #dest "."))
-    (message (cat "Aishi & Reimu (SAGE '25 Demo) standalone-rc1 is installed in " #dest "."
+    (message (cat "Aishi & Reimu (SAGE '25 Demo) standalone-rc2 is installed in " #dest "."
                   "\n\nTo start it, open the AishiReimu drawer and double-click the StartGame icon."
                   (if (= #kept "") "" (cat "\n\nLeft as they were: " #kept ".")))))
 (exit (quiet))

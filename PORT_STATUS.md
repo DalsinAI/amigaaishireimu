@@ -27,3 +27,11 @@ fixed-path launcher. Public data redistribution remains withheld.
 - [x] Clean quit with the window's close gadget; logfile ends "tchau!"
 
 The Installer ran unattended in the lab: a lab-only copy of Install-AishiReimu had its requesters replaced by fixed answers (choice 0: the archive) and nothing else changed. The archive check on the Amiga is by size; the SHA-256 is in the ReadMe and the Installer's first message.
+
+## Standalone RC2 (6 November 2026): SHA-256 check in the Installer
+
+- [x] Tools/SHA256 (port/sha256, built by scripts/build-sha256.sh with os32-gcc16-open6; 6612 bytes, same bytes on every build) in the drawer, Licences/SHA256.txt beside the other licences
+- [x] Lab t4-opensurge: Tools/SHA256 gives OK/0 for the right hash, FAILED/10 for a wrong one, 20 for a missing file; inside an Installer script `(run ... (safe))` returns those codes
+- [x] All three downloads (AS2R zip, Aishi & Reimu zip, Sonic The Last Hope.rar) check OK on the Amiga, 18-25 s each in the lab
+- [x] Installer texts kept under 512 characters per literal: Installer 47.19 refused Install-SonicTLH's longer first message ("Symbol or String too long")
+- [x] Install-AishiReimu: after the size check it asks "Check the SHA-256 of Aishi & Reimu (SAGE '25 Demo).zip before it is unpacked?" (Check it is the default); given the folder, it asks whether the player still has the zip. Archive checked on the Amiga by Tools/SHA256 (OK); the hand-run Installer test this round was Install-SonicTLH, the same generated code
