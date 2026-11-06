@@ -1,6 +1,6 @@
 {
   "name": "Aishi & Reimu (SAGE '25 Demo)",
-  "version": "standalone-rc1",
+  "version": "standalone-rc2",
   "drawer": "AishiReimu",
   "program": "StartGame",
   "cpu": "68040",
