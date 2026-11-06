@@ -1,0 +1,216 @@
+; $VER: Install-AishiReimu standalone-rc1 (5.11.2026)
+; The Amiga Installer script for Aishi & Reimu (SAGE '25 Demo), an AmiCradle game port.
+; Made by amicradle scripts/port_installer.py: change the spec, not this file.
+; Run it from its icon, beside the AishiReimu drawer where the archive was unpacked.
+
+(set @app-name "Aishi & Reimu (SAGE '25 Demo)")
+(set #version "standalone-rc1")
+(set #drawer "AishiReimu")
+(set #program "StartGame")
+(set #space 546875)  ; KB
+
+(onerror
+    (message (cat "Aishi & Reimu (SAGE '25 Demo) was not installed completely." "\n\n" @error-msg
+                  "\n\nFiles already copied stay where they are. Run Install-AishiReimu again to finish.")))
+
+; the Installer, the CPU and the FPU
+(if (< @installer-version 2818051)
+    (abort "Aishi & Reimu (SAGE '25 Demo) needs Installer 43.3 or newer. This one is older: install AmigaOS 3.2 or a newer Installer."))
+(set #cpu (database "cpu"))
+(if (not (or (= #cpu "68040") (= #cpu "68060") (= #cpu "68080")))
+    (abort (cat "Aishi & Reimu (SAGE '25 Demo) needs a 68040, 68060 or 68080 with an FPU. This Amiga has a " #cpu ".")))
+(if (= (database "fpu") "NOFPU")
+    (abort "Aishi & Reimu (SAGE '25 Demo) needs a 68040, 68060 or 68080 with an FPU. This Amiga has no FPU."))
+
+; the package: the drawer beside this script
+(set #source (pathonly (expandpath @icon)))
+(set #from (tackon #source #drawer))
+(if (<> (exists #from (noreq)) 2)
+    (abort "The AishiReimu drawer is not beside Install-AishiReimu. Unpack the whole archive, then run Install-AishiReimu from there."))
+(if (<> (exists (tackon #from #program) (noreq)) 1)
+    (abort "The AishiReimu drawer has no StartGame in it. Unpack the whole archive again."))
+
+(welcome "This installs Aishi & Reimu (SAGE '25 Demo) standalone-rc1 for AmigaOS 3.2 on a 68040, 68060 or 68080 with an FPU.")
+
+; where: the parent drawer
+(set #default
+    (if (= (exists "Work:Games" (noreq)) 2) "Work:Games"
+        (if (= (exists "Work:" (noreq)) 2) "Work:" "SYS:")))
+(set #parent
+    (askdir
+        (prompt "Where should the AishiReimu drawer go? Choose the drawer to put it in.")
+        (help "The Installer makes or updates a drawer called AishiReimu in the drawer you choose. An update keeps your saves and settings.")
+        (default #default)))
+(set #dest (tackon #parent #drawer))
+(set #update (= (exists #dest (noreq)) 2))
+; in KB where the Installer can say so: in bytes, 2 GB free and more does not fit
+(set #free (if (>= @installer-version 2883584) (getdiskspace #parent "K")
+    (/ (getdiskspace #parent) 1024)))
+(if (and (>= #free 0) (< #free #space))
+    (abort (cat "There is not enough room in " #parent ": Aishi & Reimu (SAGE '25 Demo) needs 560 MB free.")))
+
+; GFOpenGPU's modules: in LIBS:GFOpenGPU/, or copied there from LIBS:OpenGPU/
+; (older instances have only that); none is copied before all are found
+(if (and (<> (exists "LIBS:GFOpenGPU/GL.module" (noreq)) 1) (<> (exists "LIBS:OpenGPU/GL.module" (noreq)) 1))
+    (abort "Aishi & Reimu (SAGE '25 Demo) needs GFOpenGPU's GL.module, which is in neither LIBS:GFOpenGPU/ nor LIBS:OpenGPU/. Install GFOpenGPU (SDL2) first, then run Install-AishiReimu again. Nothing has been installed."))
+(if (and (<> (exists "LIBS:GFOpenGPU/SDL2.module" (noreq)) 1) (<> (exists "LIBS:OpenGPU/SDL2.module" (noreq)) 1))
+    (abort "Aishi & Reimu (SAGE '25 Demo) needs GFOpenGPU's SDL2.module, which is in neither LIBS:GFOpenGPU/ nor LIBS:OpenGPU/. Install GFOpenGPU (SDL2) first, then run Install-AishiReimu again. Nothing has been installed."))
+(if (<> (exists "LIBS:GFOpenGPU" (noreq)) 2)
+    (makedir "LIBS:GFOpenGPU"))
+(if (<> (exists "LIBS:GFOpenGPU/GL.module" (noreq)) 1)
+    (copylib
+        (prompt "Copying GL.module from LIBS:OpenGPU/ to LIBS:GFOpenGPU/")
+        (help @copylib-help)
+        (source "LIBS:OpenGPU/GL.module")
+        (dest "LIBS:GFOpenGPU")))
+(if (<> (exists "LIBS:GFOpenGPU/SDL2.module" (noreq)) 1)
+    (copylib
+        (prompt "Copying SDL2.module from LIBS:OpenGPU/ to LIBS:GFOpenGPU/")
+        (help @copylib-help)
+        (source "LIBS:OpenGPU/SDL2.module")
+        (dest "LIBS:GFOpenGPU")))
+(complete 20)
+
+; the drawer: everything in it, but what the player has made
+(set #kept "")
+(if (exists (tackon #dest "Game") (noreq))
+    (set #kept (if (= #kept "") "Game" (cat #kept "|" "Game"))))
+(if (exists (tackon #dest "game.zip") (noreq))
+    (set #kept (if (= #kept "") "game.zip" (cat #kept "|" "game.zip"))))
+(if (not #update)
+    (makedir #dest))
+(if (= #kept "")
+    (copyfiles
+        (prompt "Copying Aishi & Reimu (SAGE '25 Demo)")
+        (help @copyfiles-help)
+        (source #from)
+        (dest #dest)
+        (all)
+        (optional "force" "askuser"))
+    (copyfiles
+        (prompt (cat "Updating Aishi & Reimu (SAGE '25 Demo). Kept as they are: " #kept))
+        (help @copyfiles-help)
+        (source #from)
+        (dest #dest)
+        (pattern (cat "~(" #kept ")"))
+        (optional "force" "askuser")))
+(if (<> (exists (tackon #parent "AishiReimu.info") (noreq)) 1)
+    (copyfiles
+        (help @copyfiles-help)
+        (source #source)
+        (dest #parent)
+        (choices "AishiReimu.info")))
+
+
+; ---------------------------------------------------------------- the game's own files
+; Aishi & Reimu (SAGE '25 Demo)'s own files are not in this archive: the player gives the Installer
+; the archive or the folder they downloaded themselves, and the game drawer is
+; built from it here, on this Amiga.
+(set #root "Aishi & Reimu (SAGE '25 Demo)")
+(set #archive "Aishi & Reimu (SAGE '25 Demo).zip")
+(set #archive-size 163830376)
+(set #game (tackon #dest "Game"))
+(set #gamezip (tackon #dest "game.zip"))
+(set #have (or (= (exists (tackon #game "languages") (noreq)) 2) (= (exists #gamezip (noreq)) 1)))
+(message "Aishi & Reimu (SAGE '25 Demo)'s own files are not part of this archive and are not given out with it. Download the game yourself from its page:\n\nhttps://sonicfangameshq.com/forums/showcase/aishi-reimu-sage-25-demo.2638/\n\nThe file there is called Aishi & Reimu (SAGE '25 Demo).zip (163830376 bytes; SHA-256 3f80a6fea4cb790fd0e0d5090565e8f111f3eb42c6c9d9ccd5ab29432277fd51).")
+(set #how
+    (askchoice
+        (prompt "Where are Aishi & Reimu (SAGE '25 Demo)'s own files, from Aishi & Reimu (SAGE '25 Demo).zip?")
+        (help "The Installer copies the game's files into the Game drawer inside AishiReimu, beside the OpenSurge engine that comes with this archive. The archive is unpacked with SYS:Utilities/GFOpenCompress. Without it, unpack the archive with any unzip tool and choose the folder instead. prepare-amiga-port.sh (in the port's repository) makes a game.zip on another computer from the same download. Keep: leaves what an earlier run installed.")
+        (choices "The archive I downloaded (Aishi & Reimu (SAGE '25 Demo).zip)" "The folder I unpacked it into (called Aishi & Reimu (SAGE '25 Demo))" "A game.zip made by prepare-amiga-port.sh" "Keep the game files already installed")
+        (default (if #have 3 0))))
+(if (and (= #how 3) (not #have))
+    (abort (cat "No game files are installed yet, so there is nothing to keep. Run Install-AishiReimu again and choose your download. The engine is installed in " #dest ".")))
+(set #src "")
+(if (= #how 0)
+    (
+        (set #arc
+            (askfile
+                (prompt "Choose Aishi & Reimu (SAGE '25 Demo).zip, as you downloaded it.")
+                (help @askfile-help)
+                (default "RAM:")))
+        (if (<> (exists #arc (noreq)) 1)
+            (abort (cat "There is no file " #arc ".")))
+        (if (<> (getsize #arc) #archive-size)
+            (abort (cat #arc " is " (getsize #arc) " bytes, not the 163830376 of Aishi & Reimu (SAGE '25 Demo).zip. Download it again from https://sonicfangameshq.com/forums/showcase/aishi-reimu-sage-25-demo.2638/")))
+        (if (<> (exists "SYS:Utilities/GFOpenCompress" (noreq)) 1)
+            (abort "SYS:Utilities/GFOpenCompress, which unpacks the archive, is not on this Amiga. Unpack Aishi & Reimu (SAGE '25 Demo).zip with an unzip tool, then run Install-AishiReimu again and choose the Aishi & Reimu (SAGE '25 Demo) folder."))
+        (set #unpack (tackon #dest "Unpack"))
+        (if (= (exists #unpack (noreq)) 2)
+            (delete #unpack (all) (optional "force")))
+        (makedir #unpack)
+        (working "Unpacking Aishi & Reimu (SAGE '25 Demo).zip. This takes a few minutes.")
+        (run (cat "SYS:Utilities/GFOpenCompress x \"" #arc "\" \"" #unpack "\" >NIL:"))
+        (set #src (tackon #unpack #root))
+    )
+)
+(if (= #how 1)
+    (
+        (set #src
+            (askdir
+                (prompt "Choose the folder called Aishi & Reimu (SAGE '25 Demo), unpacked from Aishi & Reimu (SAGE '25 Demo).zip.")
+                (help @askdir-help)
+                (default "RAM:")))
+        (if (and (<> (fileonly #src) #root) (= (exists (tackon #src #root) (noreq)) 2))
+            (set #src (tackon #src #root)))
+        (if (<> (fileonly #src) #root)
+            (abort (cat #src " is not the Aishi & Reimu (SAGE '25 Demo) folder. Choose the folder that unpacking Aishi & Reimu (SAGE '25 Demo).zip made.")))
+    )
+)
+(if (<> #src "")
+    (
+        (if (<> (exists (tackon #src "scripts/ui/menubuttonlist.ss") (noreq)) 1)
+            (abort (cat #src " has no scripts/ui/menubuttonlist.ss. It is not a complete copy of Aishi & Reimu (SAGE '25 Demo).zip; unpack it again.")))
+        (if (<> (getsize (tackon #src "scripts/ui/menubuttonlist.ss")) 7688)
+            (abort (cat "scripts/ui/menubuttonlist.ss in " #src " is not the one in Aishi & Reimu (SAGE '25 Demo).zip (7688 bytes). Download the game again from https://sonicfangameshq.com/forums/showcase/aishi-reimu-sage-25-demo.2638/")))
+        (if (<> (exists (tackon #src "surge.cfg") (noreq)) 1)
+            (abort (cat #src " has no surge.cfg. It is not a complete copy of Aishi & Reimu (SAGE '25 Demo).zip; unpack it again.")))
+        (if (<> (getsize (tackon #src "surge.cfg")) 1336)
+            (abort (cat "surge.cfg in " #src " is not the one in Aishi & Reimu (SAGE '25 Demo).zip (1336 bytes). Download the game again from https://sonicfangameshq.com/forums/showcase/aishi-reimu-sage-25-demo.2638/")))
+        (if (<> (exists (tackon #src "levels/cosmic-1.lev") (noreq)) 1)
+            (abort (cat #src " has no levels/cosmic-1.lev. It is not a complete copy of Aishi & Reimu (SAGE '25 Demo).zip; unpack it again.")))
+        (if (<> (getsize (tackon #src "levels/cosmic-1.lev")) 45303)
+            (abort (cat "levels/cosmic-1.lev in " #src " is not the one in Aishi & Reimu (SAGE '25 Demo).zip (45303 bytes). Download the game again from https://sonicfangameshq.com/forums/showcase/aishi-reimu-sage-25-demo.2638/")))
+        (if (= (exists #gamezip (noreq)) 1)
+            (delete #gamezip (optional "force")))
+        (if (= (exists #game (noreq)) 2)
+            (delete #game (all) (optional "force")))
+        (copyfiles
+            (prompt "Copying Aishi & Reimu (SAGE '25 Demo)'s files into the Game drawer")
+            (help @copyfiles-help)
+            (source #src)
+            (dest #game)
+            (pattern "~(#?.exe|#?.dll|src|screenshots|logfile.txt|allegro.log|surge.prefs|CMakeLists.txt)")
+            (optional "force"))
+        (if (= (exists (tackon #dest "Unpack") (noreq)) 2)
+            (delete (tackon #dest "Unpack") (all) (optional "force")))
+    )
+)
+(if (= #how 2)
+    (
+        (set #zip
+            (askfile
+                (prompt "Choose the game.zip that prepare-amiga-port.sh made from Aishi & Reimu (SAGE '25 Demo).zip.")
+                (help @askfile-help)
+                (default "RAM:")))
+        (if (<> (exists #zip (noreq)) 1)
+            (abort (cat "There is no file " #zip ".")))
+        (if (= (exists #game (noreq)) 2)
+            (delete #game (all) (optional "force")))
+        (copyfiles
+            (help @copyfiles-help)
+            (source #zip)
+            (dest #dest)
+            (newname "game.zip")
+            (optional "force"))
+    )
+)
+
+(set @default-dest #dest)
+(complete 100)
+(if @pretend
+    (message (cat "Pretend: nothing was copied or changed. Aishi & Reimu (SAGE '25 Demo) would have gone in " #dest "."))
+    (message (cat "Aishi & Reimu (SAGE '25 Demo) standalone-rc1 is installed in " #dest "."
+                  "\n\nTo start it, open the AishiReimu drawer and double-click the StartGame icon."
+                  (if (= #kept "") "" (cat "\n\nLeft as they were: " #kept ".")))))
+(exit (quiet))
